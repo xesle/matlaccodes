@@ -50,22 +50,10 @@ templateDouble = double(templateR);
 generalRater = hypot(lambda1, lambda2);
 
 generalRateRCVH =  roundn(generalRater,precisioncv2);
-
-t = zeros(size(generalRateRCVH));
-              
-t(generalRateRCVH < (0.3)) = 0;
-t(generalRateRCVH > (0.5)) = 0;
-
-positiveUnique = unique(generalRateRCVH);      
-
-disp('---------ANTES ----------')
-disp(numel(unique(t)))
-disp('-------------------')
-
-disp('---------AHORA ----------')
-disp(numel(positiveUnique))
-disp('-------------------')
-
+t = generalRateRCVH;
+t(generalRateRCVH > 6.4) = 0;
+t(generalRateRCVH < 3) = 0;
+positiveUnique = unique(t);      
 
 for x = 1:numel(positiveUnique)
 
@@ -95,16 +83,42 @@ detections = connecction(L, num, result);
 disp('********')
 disp(detections)
 disp('*********')
+
  
-if detections > 7 && FP == 0
+if detections >= 5 && FP == 0
 
 outputRPA = 255 - outputR;
 outputRPB = 255 - outputR;
 outputRPC = 255 - outputR;
 
-outputRPA(outputRPA & result) = 246;
-outputRPB(outputRPB & result) = 22;
-outputRPC(outputRPC & result) = 22;
+[l,m] = size(result);
+resultExtend = result;
+for a=1:l
+    for b=1:m
+        if result(a,b) == 1
+            if a+3 < l
+                aux = a+1;
+                resultExtend(a:a+3,b) = 1;
+            end
+            if a-3 > 0
+                aux = a-1;
+                resultExtend(a-3:a,b) = 1;
+            end    
+            if b-3 > 0
+                aux = b-1;
+                resultExtend(a,b-3:b) = 1;
+            end
+            if b + 3 < m
+                aux = b+1;
+                resultExtend(a,b:b+3) = 1;
+            end    
+        end    
+    end    
+end    
+
+outputRPA(outputRPA & resultExtend) = 246;
+outputRPB(outputRPB & resultExtend) = 22;
+outputRPC(outputRPC & resultExtend) = 22;
 contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
 
 outputRPA(outputRPA & contour) = 59;
@@ -116,7 +130,6 @@ im = cat(3, outputRPA, outputRPB, outputRPC);
 nameImage = sprintf('1_name_%s_cv_%1.7f_recall_%1.7f_det_%1.7f_FP_%1.7f_.png',filename,positiveUnique(x),recall,detections,FP);
 outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);  
-
 
 end
 
