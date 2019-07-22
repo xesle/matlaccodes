@@ -52,9 +52,9 @@ imagePath = [folderPath ,filename];
 
 %if ii == 1
  
-thcv1 = 0.3;  
+thcv1 = 0.3707;  
 sigmaCV1 = 0.3;
-precisioncv1 = 1;
+precisioncv1 = 0.0001;
  
 thcv2 = 0.1;
 sigmaCV2 = 0.41;
@@ -434,7 +434,7 @@ outputRPC(outputRPC & contour) = 22;
 im = cat(3, outputRPA, outputRPB, outputRPC);
 dt = datestr(now,'HH_MM_SS');
 nameImage = sprintf('%1.7f_%1.7f_%s_%s',thcv2,sigmaCV2,dt, filename);
-outputDir = ['/home/xenon/git_workspace/matlaccodes/results/'  nameImage];
+outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);
 
 %%
