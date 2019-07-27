@@ -1,4 +1,4 @@
-function [] = histeresis()
+function [] = histcv()
 
 close all;clc;
 

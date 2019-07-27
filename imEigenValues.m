@@ -7,7 +7,7 @@ n = numel(gxx);
 
 [r c] = size(gxx);
 
-parfor i = 1:n
+for i = 1:n
     if mask(i) == 1
         ev = eig([gxx(i) gxy(i) ; gxy(i) gyy(i)]);
         if ev(1)< ev(2)

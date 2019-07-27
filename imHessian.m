@@ -2,61 +2,41 @@ function varargout = imHessian(I, sigma, varargin)
 
 
 % if ndims(img) == 2 
-    % Compute kernel coordinates
-%     nx = round(sigma * 3);
-     
+    % Compute kernel coordinates     
+% [x,y]=ndgrid(floor(-3*sigma):ceil(3*sigma),floor(-3*sigma):ceil(3*sigma)); 
+% 
+% DGaussxx = 1/(2*pi*sigma^4) * (x.^2/sigma^2 - 1) .* exp(-(x.^2 + y.^2)/(2*sigma^2));  
+% DGaussxy = 1/(2*pi*sigma^6) * (x .* y) .* exp(-(x.^2 + y.^2)/(2*sigma^2)); 
+% DGaussyy = 1/(2*pi*sigma^4) * (y.^2/sigma^2 - 1) .* exp(-(x.^2 + y.^2)/(2*sigma^2)); 
+ 
+% Dxx = conv2(I,DGaussxx,'same');
+% Dyy = conv2(I,DGaussyy,'same');
+% Dxy = conv2(I,DGaussxy,'same');
 
-% Make kernel coordinates
-[X,Y] = ndgrid(-round(3*sigma):round(3*sigma));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Build the gaussian 2nd derivatives filters
-DGaussxx = 1/(2*pi*sigma^4) * (X.^2/sigma^2 - 1) .* exp(-(X.^2 + Y.^2)/(2*sigma^2));
-DGaussxy = 1/(2*pi*sigma^6) * (X .* Y)           .* exp(-(X.^2 + Y.^2)/(2*sigma^2));
-DGaussyy = DGaussxx';
+% DGaussxx = ndgauss([11 11],2*sqrt(2)*[1 1],'der',[2 0]);
+% DGaussyy = ndgauss([11 11],2*sqrt(2)*[1 1],'der',[0 2]);
+% DGaussxy = ndgauss([11 11],2*sqrt(2)*[1 1],'der',[1 1]);
+% 
+% 
+% Dxx = conv2(I,DGaussxx,'same');
+% Dyy = conv2(I,DGaussyy,'same');
+% Dxy = conv2(I,DGaussxy,'same');
 
-Dxx = imfilter(I,DGaussxx,'conv');
-Dxy = imfilter(I,DGaussxy,'conv');
-Dyy = imfilter(I,DGaussyy,'conv');
+% 
+G1=fspecial('gauss',[3, 3], sigma);
+%G1=fspecial('gauss',[round(k*sigma), round(k*sigma)], sigma);
+[Gx,Gy] = gradient(G1);   
+[Gxx,Gxy] = gradient(Gx);
+[Gyx,Gyy] = gradient(Gy);
     
     
-    varargout = {Dxx,Dxy, Dyy};
+Dxx = imfilter(I,Gxx,'conv');
+Dxy = imfilter(I,Gxy,'conv');
+Dyy = imfilter(I,Gyy,'conv');
+
+varargout = {Dxx,Dxy, Dyy};
     
-% elseif ndims(img) == 3
-%     % Use smoothing, and succession of finite differences
-%     if sigma ~= 0
-%         img = imgaussfilt(img, sigma);
-%     end
-%     
-%     Dx = gradient3d(img, 'x');
-%     Dy = gradient3d(img, 'y');
-%     Dz = gradient3d(img, 'z');
-%     Dxx = gradient3d(Dx, 'x');
-%     Dyy = gradient3d(Dy, 'y');
-%     Dzz = gradient3d(Dz, 'z');
-%     Dxy = gradient3d(Dx, 'y');
-%     Dxz = gradient3d(Dx, 'z');
-%     Dyz = gradient3d(Dy, 'z');
-%     
-%     varargout = {Dxx, Dyy, Dzz, Dxy, Dxz, Dyz};
-% 
-% else
-%     error('Requires a 2D or 3D image');
-% end
-% 
-% function grad = gradient3d(img, dir)
-% 
-% grad = img;
-% switch dir
-%     case {1, 'y'}
-%         grad(1,:,:) = img(2,:,:) - img(1,:,:);
-%         grad(2:end-1,:,:) = img(3:end,:,:) - img(1:end-2,:,:);
-%         grad(end,:,:) = img(end,:,:) - img(end-1,:,:);
-%     case {2, 'x'}
-%         grad(:,1,:) = img(:,2,:) - img(:,1,:);
-%         grad(:,2:end-1,:) = img(:,3:end,:) - img(:,1:end-2,:);
-%         grad(:,end,:) = img(:,end,:) - img(:,end-1,:);
-%     case {3, 'z'}
-%         grad(:,:,1) = img(:,:,2) - img(:,:,1);
-%         grad(:,:,2:end-1) = img(:,:,3:end) - img(:,:,1:end-2);
-%         grad(:,:,end) = img(:,:,end) - img(:,:,end-1);
+
 end

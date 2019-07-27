@@ -1,4 +1,4 @@
-function [] = segmentateOCTCV()
+function [] = si()
 
 close all;clc;
 
@@ -20,7 +20,7 @@ for i = 1:maxE
     end
 end 
 
-sigmaCV2 = 0.1:0.01:1.5;
+sigmaCV2 = 0.3;
 %sigmaCV2 = 0.3;
 
 precisioncv2 = 1;
@@ -61,7 +61,7 @@ for i = 1:n
         suma(i) = lambda1(i) + lambda2(i);
         resta(i) = lambda2(i) - lambda1(i);
         div(i) = suma(i) / resta(i);
-        siValue(i) = 2/pi * atan2(suma(i), resta(i)); 
+        siValue(i) = 2/pi * atan2(resta(i),suma(i)); 
 end
 
 
@@ -87,7 +87,7 @@ result(abs(positiveUnique(x) - generalRater) <= eps(generalRater)) = 1;
 
 commonResult = sum(result & templateR);
 unionResult = sum(result | templateR);
-%       plotconfusion(templateR,result);
+plotconfusion(templateR,result);
 cm=sum(result == 1); % the number of voxels in m
 co=sum(templateR == 1); % the number of voxels in o 
 Jaccard=commonResult/unionResult;
@@ -102,7 +102,7 @@ FP = length(find(subtr == 1));
 precision = TP / (TP + FP); 
 recall  = TP / (TP + FN);
 
-if Jaccard > 0.1 
+%if Jaccard > 0.1 
 
 
 %detections = connecction(L, num, result);
@@ -153,7 +153,7 @@ nameImage = sprintf('TP_%1.7f_name_%s_si_%1.7f_sg_%1.7f_FP_%1.7f_.png',TP, filen
 outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);  
 
-end
+%end
 
 end
 
