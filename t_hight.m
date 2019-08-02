@@ -9,6 +9,7 @@ inputDir = cd;
 if (iscell(filename))
     maxE = numel(filename);
 else
+    
     maxE = 1;
 end 
 
@@ -65,9 +66,10 @@ disp(numel(positiveUnique))
 
 for x = 1:numel(positiveUnique)
 
-result2 = zeros(size(generalRater));
-result2(abs(positiveUnique(x) - generalRater) <= eps(generalRater)) = 1;
-result = bwfill(result2,'holes',8);
+result = zeros(size(generalRater));
+result(abs(positiveUnique(x) - generalRater) <= eps(generalRater)) = 1;
+
+result = bwfill(result,'holes',8);
 
 commonResult = sum(result & templateR);
 unionResult = sum(result | templateR);

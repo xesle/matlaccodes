@@ -22,15 +22,13 @@ end
 
 sigmaCMDh =  0.94;
 precisioncmdh = 1;
-thcmdh = 0.2
+thcmdh = 0.2;
 
 sigmaCMDl =  0.3;
 precisioncmdl = 4;
-thcmdl = 1.2162
+thcmdl = 1.2162;
 
 templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/' filename]);
-
-[L,num] = bwlabel(templateR);
 
 maskR = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/maskCropped/' filename]);
 imga = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Cropped/' filename]);
@@ -39,7 +37,7 @@ imga = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Cropped/' filen
 
 if nc == 3
     imga = rgb2gray(imga);
-end;
+end
                        
 outputR =  imga;
 outputDouble = im2double(outputR);
@@ -50,7 +48,7 @@ templateDouble = double(templateR);
 % totalSG = [];
 % sumValues = [];    
     
-    
+
 
 [gxxh, gxyh, gyyh] = imHessian(outputDouble,sigmaCMDh);
 [lambda1h, lambda2h] = imEigenValues(gxxh, gxyh, gyyh, maskR);
@@ -58,6 +56,7 @@ cmdValueh = zeros(size(lambda1h));
 divh = zeros(size(lambda1h));
 sumah =  zeros(size(lambda1h));
 nh = numel(lambda1h);
+
 
 [gxxl, gxyl, gyyl] = imHessian(outputDouble,sigmaCMDl);
 [lambda1l, lambda2l] = imEigenValues(gxxl, gxyl, gyyl, maskR);
@@ -78,6 +77,11 @@ for i = 1:nh
 end
 
 cmdValueh(sumah >= 0) = 0;
+
+figure;
+imshow(cmdValueh,[]);
+pause(55);
+
 cmdValueRoundh =  roundn(cmdValueh,precisioncmdh);
 result2 = zeros(size(cmdValueRoundh));
 result2(abs(thcmdh - cmdValueRoundh) <= eps(cmdValueRoundh)) = 1;
@@ -124,6 +128,7 @@ outputRPA = outputR;
 outputRPB = outputR;
 outputRPC = outputR;
 
+
 [L,num] = bwlabel(resulth,8);
 
 low = resultl;
@@ -154,7 +159,7 @@ sigmaCV1 = 0.3;
 precisioncv1 = 4;
 tcv1 = 0.6582;
 
-sigmaCV2 = 1.01;
+sigmaCV2 = 1.00;
 precisioncv2 = 1;
 tcv2 = 0.1;
 
@@ -227,7 +232,7 @@ for a = 1:m
     end
 end
 
-resultHisteresis = resultHisteresis2 | resultHisteresis1
+resultHisteresis = resultHisteresis2 | resultHisteresis1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
@@ -238,11 +243,107 @@ outputRPB = outputR;
 outputRPC = outputR;
     
 
-contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
 
-outputRPA(outputRPA & contour) = 59;
-outputRPB(outputRPB & contour) = 246;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[L,num] = bwlabel(templateR);
+
+[LH,num2] = bwlabel(resultHisteresis,8);
+
+
+aux = zeros(size(templateR));
+aux2 = zeros(size(templateR));
+auxH = zeros(size(templateR));
+auxN = zeros(size(templateR));
+
+aux(L == 4) = 1;
+%aux2(L == 3) = 1;
+auxH(LH == 4) = 1;
+
+
+S = regionprops(aux,'Centroid');
+SH = regionprops(auxH,'Centroid');
+% S2 = regionprops(aux2,'Centroid');
+
+SA = regionprops(aux,'Area');
+%SA2 = regionprops(aux2,'Area');
+SAH = regionprops(auxH,'Area');
+
+SO = regionprops(aux,'Orientation');
+SF = regionprops(aux,'FilledArea');
+
+disp('..');
+disp(num);
+disp(num2);
+disp('..');
+
+disp(round(S.Centroid(1)));
+disp(round(S.Centroid(2)));
+%aux(:,round(S.Centroid(1))) = 255;
+disp(SA);
+%disp(SA2);
+disp(SAH);
+disp(SO);
+disp(SF);
+
+
+
+outputRPA(aux >0) = 255;
+outputRPB(aux > 0) = 255;
+outputRPC(aux > 0) = 255;
+
+contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
+outputRPA(outputRPA & contour) = 246;
+outputRPB(outputRPB & contour) = 22;
 outputRPC(outputRPC & contour) = 22;
+
+
+imA = cat(3, outputRPA, outputRPB, outputRPC);
+
+%imshowpair(aux,auxH,'montage');
+figure;
+%auxN = aux | aux2;
+subplot(3,1,1),imshow(aux);
+subplot(3,1,2),imshow(auxH);
+subplot(3,1,3),imshow(imA);
+
+% A = aux; B = imrotate(auxH,5,'bicubic','crop');
+% imshowpair(A,B,'diff');
+
+pause(55);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% positivePredicted = length(find(templateDouble == 1));
+% negativePredicted = length(find(templateDouble == 0));
+% 
+% positiveTest = length(find(resultHisteresis1 == 1));
+% negativeTest = length(find(resultHisteresis1 == 0));
+% 
+% Predicted = [positivePredicted; negativePredicted];
+% disp(positivePredicted);
+% disp(negativePredicted);
+% tabulate(templateDouble(:));
+% disp('..');
+% disp(positiveTest);
+% disp(negativeTest);
+% tabulate(resultHisteresis1(:));
+% Test = [positiveTest; negativeTest];
+% 
+% confusionmat(Predicted, Test);
+
+
+
+% adder = resultHisteresis1 + templateDouble;
+% TP = length(find(adder == 2));
+% TN = length(find(adder == 0));
+% subtr = resultHisteresis1 - templateDouble;
+% FP = length(find(subtr == -1));
+% FN = length(find(subtr == 1));
+% 
+% test(TP, FP, TN, FN);
+%resultHisteresis
+
 
 outputRPA(outputRPA & resultHisteresis) = 246;
 outputRPB(outputRPB & resultHisteresis) = 22;
@@ -250,31 +351,30 @@ outputRPC(outputRPC & resultHisteresis) = 22;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% im = cat(3, outputRPA, outputRPB, outputRPC);
+im = cat(3, outputRPA, outputRPB, outputRPC);
+
+nameImage = sprintf('_%s_.png',filename);
+outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
+imwrite(im, outputDir);  
+
+% commonResult = sum(resultHisteresis & templateR);
+% unionResult = sum(resultHisteresis | templateR);
+% cm=sum(resultHisteresis == 1); 
+% co=sum(templateR == 1); 
+% Jaccard=commonResult/unionResult;
+% Dice=(2*commonResult)/(cm+co);
+
 % 
-% nameImage = sprintf('_%s_.png',filename);
-% outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
-% imwrite(im, outputDir);  
-
-commonResult = sum(resultHisteresis & templateR);
-unionResult = sum(resultHisteresis | templateR);
-%       plotconfusion(templateR,result);
-cm=sum(resultHisteresis == 1); % the number of voxels in m
-co=sum(templateR == 1); % the number of voxels in o 
-Jaccard=commonResult/unionResult;
-Dice=(2*commonResult)/(cm+co);
-
-
-tamano=get(0,'ScreenSize');
-figDir = ['/home/xenon/git_workspace/results/'];
-figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
-
-imshowpair(templateR, resultHisteresis);
-title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
-
-h=openfig(figDir,'new','invisible');
-saveas(h,outputDir,'png');
-close(h);
+% tamano=get(0,'ScreenSize');
+% figDir = ['/home/xenon/git_workspace/results/'];
+% figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
+% 
+% imshowpair(templateR, resultHisteresis);
+% title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
+% 
+% h=openfig(figDir,'new','invisible');
+% saveas(h,outputDir,'png');
+% close(h);
 
 
 

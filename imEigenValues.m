@@ -2,10 +2,7 @@ function [lambda1, lambda2] = imEigenValues(gxx, gxy, gyy, mask)
 
 lambda1 = zeros(size(gxx));
 lambda2 =  zeros(size(gxx));
-si = zeros(size(gxx));
 n = numel(gxx);
-
-[r c] = size(gxx);
 
 for i = 1:n
     if mask(i) == 1

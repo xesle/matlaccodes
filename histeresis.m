@@ -21,17 +21,17 @@ for i = 1:maxE
 end 
 
 %sigmaCV2 = 0.1:0.01:5;
-sigmaCV1 = 0.3;
-precisioncv1 = 4;
-tcv1 = 0.6582;
+sigmaCV1 = 0.7;
+precisioncv1 = 3;
+tcv1 = 0.259;
 
 sigmaCV2 = 1.01;
 precisioncv2 = 1;
 tcv2 = 0.1;
 
-sigmaSI = 0.49;
-precisionsi = 4;
-tsi = -0.9257;
+% sigmaSI = 0.49;
+% precisionsi = 4;
+% tsi = -0.9257;
 
 
 templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/' filename]);
@@ -73,20 +73,20 @@ resultH(abs(tcv2 - generalRated) <= eps(generalRated)) = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-[gxxr3, gxyr3, gyyr3] = imHessian(outputDouble,sigmaSI);
-[lambda3, lambda33] = imEigenValues(gxxr3, gxyr3, gyyr3, maskR);
-
-generalRates =  2/pi .* atan((lambda33 + lambda3) ./ (lambda33 - lambda3));
-generalRatess =  roundn(generalRates,precisionsi);
-
-resultSI = zeros(size(generalRatess));
-resultSI(abs(tsi - generalRatess) <= eps(generalRatess)) = 1;
+% [gxxr3, gxyr3, gyyr3] = imHessian(outputDouble,sigmaSI);
+% [lambda3, lambda33] = imEigenValues(gxxr3, gxyr3, gyyr3, maskR);
+% 
+% generalRates =  2/pi .* atan((lambda33 + lambda3) ./ (lambda33 - lambda3));
+% generalRatess =  roundn(generalRates,precisionsi);
+% 
+% resultSI = zeros(size(generalRatess));
+% resultSI(abs(tsi - generalRatess) <= eps(generalRatess)) = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [L,num] = bwlabel(resultH,8);
 
-low = resultSI | result;
+low = result;
 
 disp('mmm')
 disp(sum(low(:)));
@@ -170,21 +170,21 @@ Jaccard=commonResult/unionResult;
 Dice=(2*commonResult)/(cm+co);
 
 
-tamano=get(0,'ScreenSize');
-figDir = ['/home/xenon/git_workspace/results/'];
-figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
+% tamano=get(0,'ScreenSize');
+% figDir = ['/home/xenon/git_workspace/results/'];
+% figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
+% 
+% imshowpair(templateR, resultHisteresis);
+% title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
+% 
+% h=openfig(figDir,'new','invisible');
+% saveas(h,outputDir,'png');
+% close(h);
 
-imshowpair(templateR, resultHisteresis);
-title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
 
-h=openfig(figDir,'new','invisible');
-saveas(h,outputDir,'png');
-close(h);
-
-
-% nameImage = sprintf('%s_cvh2_%1.7f_sg_%1.7f_.png',filename,tcv1,sigmaCV2);
-% outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
-% imwrite(im, outputDir);  
+nameImage = sprintf('%s_cvh2_%1.7f_sg_%1.7f_.png',filename,tcv1,sigmaCV1);
+outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
+imwrite(im, outputDir);  
 
 
 %end

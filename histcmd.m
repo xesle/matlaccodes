@@ -24,9 +24,9 @@ sigmaCMDh =  0.94;
 precisioncmdh = 1;
 thcmdh = 0.2
 
-sigmaCMDl =  0.3;
-precisioncmdl = 4;
-thcmdl = 1.2162
+sigmaCMDl =  0.5;
+precisioncmdl = 2;
+thcmdl = 0.66
 
 templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/' filename]);
 
@@ -44,13 +44,6 @@ end;
 outputR =  imga;
 outputDouble = im2double(outputR);
 templateDouble = double(templateR);
-
-
-% totalTH = [];
-% totalSG = [];
-% sumValues = [];    
-    
-    
 
 [gxxh, gxyh, gyyh] = imHessian(outputDouble,sigmaCMDh);
 [lambda1h, lambda2h] = imEigenValues(gxxh, gxyh, gyyh, maskR);
@@ -99,32 +92,6 @@ cmdValueRoundl =  roundn(cmdValuel,precisioncmdl);
 resultl = zeros(size(cmdValueRoundl));
 resultl(abs(thcmdl - cmdValueRoundl) <= eps(cmdValueRoundl)) = 1;
 
-
-
-
-
-
-% commonResult = sum(result & templateR);
-% unionResult = sum(result | templateR);
-% %       plotconfusion(templateR,result);
-% cm=sum(result == 1); % the number of voxels in m
-% co=sum(templateR == 1); % the number of voxels in o 
-% Jaccard=commonResult/unionResult;
-% Dice=(2*commonResult)/(cm+co);
-% 
-% adder = result + templateDouble;
-% TP = length(find(adder == 2));
-% TN = length(find(adder == 0));
-% subtr = result - templateDouble;
-% FN = length(find(subtr == -1));
-% FP = length(find(subtr == 1));
-% precision = TP / (TP + FP); 
-% recall  = TP / (TP + FN);
-
-% detections = connecction(L, num, result);
- 
-% if Jaccard == 0.4
-
 outputRPA = outputR;
 outputRPB = outputR;
 outputRPC = outputR;
@@ -153,8 +120,6 @@ for a = 1:m
     end
 end
 
-    
-
 contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
 
 outputRPA(outputRPA & contour) = 59;
@@ -174,23 +139,23 @@ Jaccard=commonResult/unionResult;
 Dice=(2*commonResult)/(cm+co);
 
 
-tamano=get(0,'ScreenSize');
-figDir = ['/home/xenon/git_workspace/results/'];
-figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
-
-imshowpair(templateR, resultHisteresis);
-title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
-
-h=openfig(figDir,'new','invisible');
-saveas(h,outputDir,'png');
-close(h);
-
-
-% im = cat(3, outputRPA, outputRPB, outputRPC);
+% tamano=get(0,'ScreenSize');
+% figDir = ['/home/xenon/git_workspace/results/'];
+% figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
 % 
-% nameImage = sprintf('_%s_.png',filename);
-% outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
-% imwrite(im, outputDir);  
+% imshowpair(templateR, resultHisteresis);
+% title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
+% 
+% h=openfig(figDir,'new','invisible');
+% saveas(h,outputDir,'png');
+% close(h);
+
+
+im = cat(3, outputRPA, outputRPB, outputRPC);
+
+nameImage = sprintf('histcmd_%s_.png',filename);
+outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
+imwrite(im, outputDir);  
 
 %end
 

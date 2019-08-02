@@ -20,7 +20,7 @@ for i = 1:maxE
     end
 end 
 
-sigmaCV2 = 0.3;
+sigmaCV2 = 0.1:0.1:1.5;
 %sigmaCV2 = 0.3;
 
 precisioncv2 = 1;
@@ -59,11 +59,13 @@ n = numel(lambda1);
 
 for i = 1:n
         suma(i) = lambda1(i) + lambda2(i);
-        resta(i) = lambda2(i) - lambda1(i);
+        resta(i) = lambda1(i) - lambda2(i);
         div(i) = suma(i) / resta(i);
         siValue(i) = 2/pi * atan2(resta(i),suma(i)); 
 end
 
+imshow(siValue);
+pause(5);
 
 %generalRate =  2/pi .* atan((lambda2 + lambda1) ./ (lambda2 - lambda1));
 
@@ -87,7 +89,7 @@ result(abs(positiveUnique(x) - generalRater) <= eps(generalRater)) = 1;
 
 commonResult = sum(result & templateR);
 unionResult = sum(result | templateR);
-plotconfusion(templateR,result);
+% plotconfusion(templateR,result);
 cm=sum(result == 1); % the number of voxels in m
 co=sum(templateR == 1); % the number of voxels in o 
 Jaccard=commonResult/unionResult;
@@ -102,39 +104,41 @@ FP = length(find(subtr == 1));
 precision = TP / (TP + FP); 
 recall  = TP / (TP + FN);
 
-%if Jaccard > 0.1 
+if FP == 0  
 
 
-%detections = connecction(L, num, result);
+detections = connecction(L, num, result);
+
+if detections > 2
 
 outputRPA = 255 - outputR;
 outputRPB = 255 - outputR;
 outputRPC = 255 - outputR;
 
-% [l,m] = size(result);
-% resultExtend = result;
-% for a=1:l
-%     for b=1:m
-%         if result(a,b) == 1
-%             if a+3 < l
-%                 aux = a+1;
-%                 resultExtend(a:a+3,b) = 1;
-%             end
-%             if a-3 > 0
-%                 aux = a-1;
-%                 resultExtend(a-3:a,b) = 1;
-%             end    
-%             if b-3 > 0
-%                 aux = b-1;
-%                 resultExtend(a,b-3:b) = 1;
-%             end
-%             if b + 3 < m
-%                 aux = b+1;
-%                 resultExtend(a,b:b+3) = 1;
-%             end    
-%         end    
-%     end    
-% end    
+[l,m] = size(result);
+resultExtend = result;
+for a=1:l
+    for b=1:m
+        if result(a,b) == 1
+            if a+3 < l
+                aux = a+1;
+                resultExtend(a:a+3,b) = 1;
+            end
+            if a-3 > 0
+                aux = a-1;
+                resultExtend(a-3:a,b) = 1;
+            end    
+            if b-3 > 0
+                aux = b-1;
+                resultExtend(a,b-3:b) = 1;
+            end
+            if b + 3 < m
+                aux = b+1;
+                resultExtend(a,b:b+3) = 1;
+            end    
+        end    
+    end    
+end    
 
 contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
 
@@ -142,18 +146,20 @@ outputRPA(outputRPA & contour) = 59;
 outputRPB(outputRPB & contour) = 246;
 outputRPC(outputRPC & contour) = 22;
 
-outputRPA(outputRPA & result) = 246;
-outputRPB(outputRPB & result) = 22;
-outputRPC(outputRPC & result) = 22;
+outputRPA(outputRPA & resultExtend) = 246;
+outputRPB(outputRPB & resultExtend) = 22;
+outputRPC(outputRPC & resultExtend) = 22;
 
 
 im = cat(3, outputRPA, outputRPB, outputRPC);
 
-nameImage = sprintf('TP_%1.7f_name_%s_si_%1.7f_sg_%1.7f_FP_%1.7f_.png',TP, filename,positiveUnique(x),sigmaCV2(y),FP);
+nameImage = sprintf('de_%1.7f_name_%s_si_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections, filename,positiveUnique(x),sigmaCV2(y),FP);
 outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);  
 
-%end
+end
+
+end
 
 end
 

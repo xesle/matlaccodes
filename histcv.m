@@ -25,7 +25,7 @@ sigmaCV1 = 0.3;
 precisioncv1 = 4;
 tcv1 = 0.6582;
 
-sigmaCV2 = 1.01;
+sigmaCV2 = 1.03;
 precisioncv2 = 1;
 tcv2 = 0.1;
 
@@ -51,7 +51,12 @@ templateDouble = double(templateR);
 [gxxr, gxyr, gyyr] = imHessian(outputDouble,sigmaCV1);
 [lambda1, lambda2] = imEigenValues(gxxr, gxyr, gyyr, maskR);
 
+
+
 generalRate = hypot(lambda1, lambda2);
+
+
+
 
 generalRater =  roundn(generalRate,precisioncv1);
 
@@ -163,28 +168,28 @@ im = cat(3, outputRPA, outputRPB, outputRPC);
 
 commonResult = sum(resultHisteresis & templateR);
 unionResult = sum(resultHisteresis | templateR);
-%       plotconfusion(templateR,result);
+%plotconfusion(templateR,resultHisteresis);
 cm=sum(resultHisteresis == 1); % the number of voxels in m
 co=sum(templateR == 1); % the number of voxels in o 
 Jaccard=commonResult/unionResult;
 Dice=(2*commonResult)/(cm+co);
 
+% 
+% tamano=get(0,'ScreenSize');
+% figDir = ['/home/xenon/git_workspace/results/'];
+% figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
+% 
+% imshowpair(templateR, resultHisteresis);
+% title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
+% 
+% h=openfig(figDir,'new','invisible');
+% saveas(h,outputDir,'png');
+% close(h);
 
-tamano=get(0,'ScreenSize');
-figDir = ['/home/xenon/git_workspace/results/'];
-figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
 
-imshowpair(templateR, resultHisteresis);
-title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
-
-h=openfig(figDir,'new','invisible');
-saveas(h,outputDir,'png');
-close(h);
-
-
-% nameImage = sprintf('%s_cvh2_%1.7f_sg_%1.7f_.png',filename,tcv1,sigmaCV2);
-% outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
-% imwrite(im, outputDir);  
+nameImage = sprintf('%s_cvh2_%1.7f_sg_%1.7f_.png',filename,tcv1,sigmaCV2);
+outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
+imwrite(im, outputDir);  
 
 
 %end

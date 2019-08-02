@@ -20,10 +20,10 @@ for i = 1:maxE
     end
 end 
 
-%sigmaCV2 = 0.1:0.01:5;
-sigmaCV2 = 0.3;
+sigmaCV2 = 0.1:0.1:1;
+%sigmaCV2 = 0.3;
 
-precisioncv2 = 4;
+precisioncv2 = 3;
 
 templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/' filename]);
 
@@ -46,11 +46,11 @@ templateDouble = double(templateR);
 % totalSG = [];
 % sumValues = [];    
     
-%for y = 1:numel(sigmaCV2)
+for y = 1:numel(sigmaCV2)
 
 
 
-[gxxr, gxyr, gyyr] = imHessian(outputDouble,sigmaCV2);
+[gxxr, gxyr, gyyr] = imHessian(outputDouble,sigmaCV2(y));
 [lambda1, lambda2] = imEigenValues(gxxr, gxyr, gyyr, maskR);
 generalRate = hypot(lambda1, lambda2);
 
@@ -87,9 +87,11 @@ FP = length(find(subtr == 1));
 precision = TP / (TP + FP); 
 recall  = TP / (TP + FN);
 
+if FP == 0
+
 detections = connecction(L, num, result);
  
-if detections > 5 && FP == 0
+if detections > 1
 
 outputRPA = 255 - outputR;
 outputRPB = 255 - outputR;
@@ -133,7 +135,7 @@ outputRPC(outputRPC & resultExtend) = 22;
 
 im = cat(3, outputRPA, outputRPB, outputRPC);
 
-nameImage = sprintf('Dete_%1.7f_1_name_%s_cv_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections,filename,positiveUnique(x),sigmaCV2,FP);
+nameImage = sprintf('Dete_%1.7f_1_name_%s_cv_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections,filename,positiveUnique(x),sigmaCV2(y),FP);
 outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);  
 
@@ -141,7 +143,7 @@ end
 
 end
 
-%end
+end
 
 close all;
 

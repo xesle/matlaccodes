@@ -1,4 +1,4 @@
-function [] = cmd_low()
+function [] = cmd_hight()
 
 close all;clc;
 inputDir = '/home/xenon/git_workspace/matlaccodes/NewDataSet';
@@ -18,10 +18,15 @@ for i = 1:maxE
     end
 end 
 
-sigmaCMD =  0.1:0.1:3;
+sigmaCMD =  0.01:0.01:1.35;
 %sigmaCMD = 0.1;
 
-precisioncmd = 3;
+precisioncmd = 1;
+
+cmd = 0.1;
+sigma = 1.35;
+
+
 
 templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/' filename]);
 
@@ -41,9 +46,24 @@ outputDouble = im2double(outputR);
 templateDouble = double(templateR);
 
 
-% totalTH = [];
-% totalSG = [];
-% sumValues = [];    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% [gxxr, gxyr, gyyr] = imHessian(outputDouble,sigma);
+% [lambda1, lambda2] = imEigenValues(gxxr, gxyr, gyyr, maskR);
+% cmdValueB = zeros(size(lambda1));
+% div = zeros(size(lambda1));
+% suma =  zeros(size(lambda1));
+% sumaq = lambda1 + lambda2;
+% divq = lambda1 ./ lambda2;
+% cmdValueB = -(divq .* sumaq);        
+% cmdValueB(sumaq >= 0) = 0;
+% 
+% cmdValueRoundB =  roundn(cmdValueB,precisioncmd);
+% result = zeros(size(cmdValueRoundB));
+% result(abs(cmd - cmdValueRoundB) <= eps(cmdValueRoundB)) = 1;
+% 
+% resulth = bwfill(result,'holes',8);
+% [La,numa] = bwlabel(resulth,8);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
 for y = 1:numel(sigmaCMD)
 
@@ -53,25 +73,17 @@ disp(sigmaCMD(y));
 [gxxr, gxyr, gyyr] = imHessian(outputDouble,sigmaCMD(y));
 [lambda1, lambda2] = imEigenValues(gxxr, gxyr, gyyr, maskR);
 
-
 cmdValue = zeros(size(lambda1));
 div = zeros(size(lambda1));
 suma =  zeros(size(lambda1));
 
 n = numel(lambda1);
 
-for i = 1:n
-        suma(i) = lambda1(i) + lambda2(i);
-        aux = lambda1(i) ./ lambda2(i);
-        if isnan(aux)
-            div(i) = 0;
-        else    
-            div(i) = aux;
-        end    
-        cmdValue(i) = -(div(i) * suma(i));  
-end
+sumaq = lambda1 + lambda2;
+divq = lambda1 ./ lambda2;
+cmdValue = -(divq .* sumaq);        
 
-cmdValue(suma >= 0) = 0;
+cmdValue(sumaq >= 0) = 0;
 
 cmdValueRound =  roundn(cmdValue,precisioncmd);
 positiveUnique = unique(cmdValueRound); 
@@ -102,64 +114,64 @@ for x = 1:numel(positiveUnique)
 
 %detections = connecction(L, num, result);
  
-if precision > 0.15 && precision < 1  
+if Jaccard > 0.2  
     
 detections = connecction(L, num, result);
- 
-if detections > 5
+%  
+% if detections > 5
 
 outputRPA = 255 - outputR;
 outputRPB = 255 - outputR;
 outputRPC = 255 - outputR;
 
-[l,m] = size(result);
-resultExtend = result;
-for a=1:l
-    for b=1:m
-        if result(a,b) == 1
-            if a+3 < l
-                aux = a+1;
-                resultExtend(a:a+3,b) = 1;
-            end
-            if a-3 > 0
-                aux = a-1;
-                resultExtend(a-3:a,b) = 1;
-            end    
-            if b-3 > 0
-                aux = b-1;
-                resultExtend(a,b-3:b) = 1;
-            end
-            if b + 3 < m
-                aux = b+1;
-                resultExtend(a,b:b+3) = 1;
-            end    
-        end    
-    end    
-end    
+% low = result;
+% 
+% disp(sum(low(:)));
+% [m n] = size(resulth);
+% resultHisteresis = zeros(m,n);
+% 
+% for a = 1:m
+%     for b = 1:n
+%         if low(a,b) == 0 || resultHisteresis(a,b) == 1
+%             continue;
+%         else
+%             for i=1:numa
+%                   aux = zeros(m,n); 
+%                   aux(La == i) = 1;
+%                   aux = bwfill(aux,'holes',8);
+%                 if low(a,b) == aux(a,b)
+%                     resultHisteresis = resultHisteresis + aux;
+%                 end
+%             end
+%         end
+%     end
+% end
+
 
 contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
+
+resulth = bwfill(result,'holes',8);
+
 
 outputRPA(outputRPA & contour) = 59;
 outputRPB(outputRPB & contour) = 246;
 outputRPC(outputRPC & contour) = 22;
 
-outputRPA(outputRPA & resultExtend) = 246;
-outputRPB(outputRPB & resultExtend) = 22;
-outputRPC(outputRPC & resultExtend) = 22;
+outputRPA(outputRPA & resultHisteresis) = 246;
+outputRPB(outputRPB & resultHisteresis) = 22;
+outputRPC(outputRPC & resulth) = 22;
 
 
 im = cat(3, outputRPA, outputRPB, outputRPC);
 
-nameImage = sprintf('detect_%1.7f_1_name_%s_cmd_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections,filename,positiveUnique(x),sigmaCMD(y),FP);
+nameImage = sprintf('Detect_%1.7f_1_name_%s_cmd_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections,filename,positiveUnique(x),sigmaCMD(y),FP);
 outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);  
 
 end
 end
 end
-end
+%end
 
 close all;
-
-
 end
