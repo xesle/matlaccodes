@@ -25,6 +25,8 @@ function varargout = imHessian(I, sigma, varargin)
 % Dxy = conv2(I,DGaussxy,'same');
 
 % 
+
+k = 3;
 G1=fspecial('gauss',[3, 3], sigma);
 %G1=fspecial('gauss',[round(k*sigma), round(k*sigma)], sigma);
 [Gx,Gy] = gradient(G1);   

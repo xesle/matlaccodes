@@ -2,28 +2,12 @@ function [] = cv_low()
 
 close all;clc;
 
-inputDir = cd;
+inputDir = '/home/xenon/git_workspace/matlaccodes/NewDataSet/';
 
 [filename, folderPath , filterindex] = uigetfile([inputDir '/*.*'],'Pick some images','MultiSelect', 'on');
 
-if (iscell(filename))
-    maxE = numel(filename);
-else
-    maxE = 1;
-end 
 
-for i = 1:maxE
-    if (iscell(filename))
-        imagePath{i} = [folderPath ,filename{i}];
-    else
-        imagePath = [folderPath ,filename];
-    end
-end 
-
-sigmaCV2 = 0.1:0.1:1;
-%sigmaCV2 = 0.3;
-
-precisioncv2 = 3;
+precisioncv2 = 4;
 
 templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/' filename]);
 
@@ -31,24 +15,17 @@ templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTe
 
 maskR = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/maskCropped/' filename]);
 imga = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Cropped/' filename]);
-        
-[rows columns nc] = size(imga);
-
-if nc == 3
-    imga = rgb2gray(imga);
-end;
-                      
+                              
 outputR =   imga;
 outputDouble = im2double(outputR);
-templateDouble = double(templateR);
+templateDouble = double(templateR);    
+  
+sigmaCV2 = 0.1:0.01:2;
 
-% totalTH = [];
-% totalSG = [];
-% sumValues = [];    
-    
+
+
+disp(numel(sigmaCV2)); 
 for y = 1:numel(sigmaCV2)
-
-
 
 [gxxr, gxyr, gyyr] = imHessian(outputDouble,sigmaCV2(y));
 [lambda1, lambda2] = imEigenValues(gxxr, gxyr, gyyr, maskR);
@@ -61,18 +38,16 @@ generalRater =  roundn(generalRate,precisioncv2);
 positiveUnique = unique(generalRater);      
 
 disp('*******************')
+disp(sigmaCV2(y));
 disp(numel(positiveUnique))
-
 
 for x = 1:numel(positiveUnique)
 
 result = zeros(size(generalRater));
 result(abs(positiveUnique(x) - generalRater) <= eps(generalRater)) = 1;
-% result = bwfill(result2,'holes',8);
 
 commonResult = sum(result & templateR);
 unionResult = sum(result | templateR);
-%       plotconfusion(templateR,result);
 cm=sum(result == 1); % the number of voxels in m
 co=sum(templateR == 1); % the number of voxels in o 
 Jaccard=commonResult/unionResult;
@@ -87,15 +62,17 @@ FP = length(find(subtr == 1));
 precision = TP / (TP + FP); 
 recall  = TP / (TP + FN);
 
-if FP == 0
 
+if FP == 0 
+    
+    
 detections = connecction(L, num, result);
- 
-if detections > 1
 
-outputRPA = 255 - outputR;
-outputRPB = 255 - outputR;
-outputRPC = 255 - outputR;
+if detections > 11
+ 
+outputRPA = outputR;
+outputRPB = outputR;
+outputRPC = outputR;
 
 [l,m] = size(result);
 resultExtend = result;
@@ -135,9 +112,11 @@ outputRPC(outputRPC & resultExtend) = 22;
 
 im = cat(3, outputRPA, outputRPB, outputRPC);
 
-nameImage = sprintf('Dete_%1.7f_1_name_%s_cv_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections,filename,positiveUnique(x),sigmaCV2(y),FP);
+nameImage = sprintf('Detect_%1.7f_name_%s_cv_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections, filename,positiveUnique(x),sigmaCV2(y),FP);
 outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);  
+
+%end
 
 end
 
@@ -147,5 +126,7 @@ end
 
 close all;
 
+
+end
 
 end

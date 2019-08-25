@@ -2,25 +2,12 @@ function [] = si()
 
 close all;clc;
 
-inputDir = cd;
+inputDir = '/home/xenon/git_workspace/matlaccodes/NewDataSet';
+
 
 [filename, folderPath , filterindex] = uigetfile([inputDir '/*.*'],'Pick some images','MultiSelect', 'on');
 
-if (iscell(filename))
-    maxE = numel(filename);
-else
-    maxE = 1;
-end 
-
-for i = 1:maxE
-    if (iscell(filename))
-        imagePath{i} = [folderPath ,filename{i}];
-    else
-        imagePath = [folderPath ,filename];
-    end
-end 
-
-sigmaCV2 = 0.1:0.1:1.5;
+sigmaCV2 = 0.1:0.01:1.5;
 %sigmaCV2 = 0.3;
 
 precisioncv2 = 1;
@@ -31,14 +18,8 @@ templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTe
 
 maskR = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/maskCropped/' filename]);
 imga = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Cropped/' filename]);
-        
-[rows columns nc] = size(imga);
-
-if nc == 3
-    imga = rgb2gray(imga);
-end;
-                      
-outputR =  imga;
+                              
+outputR =  255 - imga;
 outputDouble = im2double(outputR);
 templateDouble = double(templateR);
 
@@ -57,29 +38,19 @@ resta =  zeros(size(lambda1));
 
 n = numel(lambda1);
 
-for i = 1:n
-        suma(i) = lambda1(i) + lambda2(i);
-        resta(i) = lambda1(i) - lambda2(i);
-        div(i) = suma(i) / resta(i);
-        siValue(i) = 2/pi * atan2(resta(i),suma(i)); 
-end
+suma = lambda1 + lambda2;
+resta = lambda1 - lambda2;
+div = suma ./ resta;
+siValue = 2/pi * atan(div); 
 
-imshow(siValue);
-pause(5);
 
 %generalRate =  2/pi .* atan((lambda2 + lambda1) ./ (lambda2 - lambda1));
 
 generalRater =  roundn(siValue,precisioncv2);
-maskIN = isnan(generalRater);
-generalRater(maskIN) = 0;
-positiveUnique = unique(generalRater);      
-
-%disp(positiveUnique)
-disp('*******************')
-disp(numel(generalRater));
-disp('-------------------')
-disp(numel(positiveUnique));
-
+% maskIN = isnan(generalRater);
+% generalRater(maskIN) = 0;
+positiveUniqueOld = unique(generalRater);      
+positiveUnique = -1:0.01:1;
 
 for x = 1:numel(positiveUnique)
 
@@ -104,12 +75,12 @@ FP = length(find(subtr == 1));
 precision = TP / (TP + FP); 
 recall  = TP / (TP + FN);
 
-if FP == 0  
+if FP == 0 && TP > 0
 
-
-detections = connecction(L, num, result);
-
-if detections > 2
+% 
+% detections = connecction(L, num, result);
+% 
+% if detections > 2
 
 outputRPA = 255 - outputR;
 outputRPB = 255 - outputR;
@@ -153,11 +124,11 @@ outputRPC(outputRPC & resultExtend) = 22;
 
 im = cat(3, outputRPA, outputRPB, outputRPC);
 
-nameImage = sprintf('de_%1.7f_name_%s_si_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections, filename,positiveUnique(x),sigmaCV2(y),FP);
+nameImage = sprintf('FP_%1.7f_name_%s_si_%1.7f_sg_%1.7f_FP_%1.7f_.png',FP, filename,positiveUnique(x),sigmaCV2(y),TP);
 outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);  
 
-end
+% end
 
 end
 

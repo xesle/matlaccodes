@@ -20,13 +20,14 @@ for i = 1:maxE
     end
 end 
 
-sigmaCMDh =  0.94;
+sigmaCMDh =  1.26;
 precisioncmdh = 1;
-thcmdh = 0.2;
+thcmdh = 0.1;
 
-sigmaCMDl =  0.3;
-precisioncmdl = 4;
-thcmdl = 1.2162;
+sigmaCMDl =  1.36;
+precisioncmdl = 3;
+thcmdl = 0.091;
+
 
 templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/' filename]);
 
@@ -155,17 +156,19 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sigmaCV1 = 0.3;
-precisioncv1 = 4;
-tcv1 = 0.6582;
 
-sigmaCV2 = 1.00;
+sigmaCV1 = 1.93;
+precisioncv1 = 4;
+tcv1 = 0.0324;
+
+sigmaCV2 = 1.06;
 precisioncv2 = 1;
 tcv2 = 0.1;
 
-sigmaSI = 0.49;
-precisionsi = 4;
-tsi = -0.9257;
+
+% sigmaSI = 0.49;
+% precisionsi = 4;
+% tsi = -0.9257;
 
 outputR =   imga;
 outputDouble = im2double(outputR);
@@ -193,20 +196,20 @@ resultH(abs(tcv2 - generalRated) <= eps(generalRated)) = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-[gxxr3, gxyr3, gyyr3] = imHessian(outputDouble,sigmaSI);
-[lambda3, lambda33] = imEigenValues(gxxr3, gxyr3, gyyr3, maskR);
-
-generalRates =  2/pi .* atan((lambda33 + lambda3) ./ (lambda33 - lambda3));
-generalRatess =  roundn(generalRates,precisionsi);
-
-resultSI = zeros(size(generalRatess));
-resultSI(abs(tsi - generalRatess) <= eps(generalRatess)) = 1;
+% [gxxr3, gxyr3, gyyr3] = imHessian(outputDouble,sigmaSI);
+% [lambda3, lambda33] = imEigenValues(gxxr3, gxyr3, gyyr3, maskR);
+% 
+% generalRates =  2/pi .* atan((lambda33 + lambda3) ./ (lambda33 - lambda3));
+% generalRatess =  roundn(generalRates,precisionsi);
+% 
+% resultSI = zeros(size(generalRatess));
+% resultSI(abs(tsi - generalRatess) <= eps(generalRatess)) = 1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [L,num] = bwlabel(resultH,8);
 
-low = resultSI | result;
+low = result;
 
 disp('mmm')
 disp(sum(low(:)));
@@ -245,104 +248,16 @@ outputRPC = outputR;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[L,num] = bwlabel(templateR);
 
-[LH,num2] = bwlabel(resultHisteresis,8);
-
-
-aux = zeros(size(templateR));
-aux2 = zeros(size(templateR));
-auxH = zeros(size(templateR));
-auxN = zeros(size(templateR));
-
-aux(L == 4) = 1;
-%aux2(L == 3) = 1;
-auxH(LH == 4) = 1;
-
-
-S = regionprops(aux,'Centroid');
-SH = regionprops(auxH,'Centroid');
-% S2 = regionprops(aux2,'Centroid');
-
-SA = regionprops(aux,'Area');
-%SA2 = regionprops(aux2,'Area');
-SAH = regionprops(auxH,'Area');
-
-SO = regionprops(aux,'Orientation');
-SF = regionprops(aux,'FilledArea');
-
-disp('..');
-disp(num);
-disp(num2);
-disp('..');
-
-disp(round(S.Centroid(1)));
-disp(round(S.Centroid(2)));
-%aux(:,round(S.Centroid(1))) = 255;
-disp(SA);
-%disp(SA2);
-disp(SAH);
-disp(SO);
-disp(SF);
-
-
-
-outputRPA(aux >0) = 255;
-outputRPB(aux > 0) = 255;
-outputRPC(aux > 0) = 255;
 
 contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
-outputRPA(outputRPA & contour) = 246;
-outputRPB(outputRPB & contour) = 22;
+
+outputRPA(outputRPA & contour) = 59;
+outputRPB(outputRPB & contour) = 246;
 outputRPC(outputRPC & contour) = 22;
 
 
 imA = cat(3, outputRPA, outputRPB, outputRPC);
-
-%imshowpair(aux,auxH,'montage');
-figure;
-%auxN = aux | aux2;
-subplot(3,1,1),imshow(aux);
-subplot(3,1,2),imshow(auxH);
-subplot(3,1,3),imshow(imA);
-
-% A = aux; B = imrotate(auxH,5,'bicubic','crop');
-% imshowpair(A,B,'diff');
-
-pause(55);
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% positivePredicted = length(find(templateDouble == 1));
-% negativePredicted = length(find(templateDouble == 0));
-% 
-% positiveTest = length(find(resultHisteresis1 == 1));
-% negativeTest = length(find(resultHisteresis1 == 0));
-% 
-% Predicted = [positivePredicted; negativePredicted];
-% disp(positivePredicted);
-% disp(negativePredicted);
-% tabulate(templateDouble(:));
-% disp('..');
-% disp(positiveTest);
-% disp(negativeTest);
-% tabulate(resultHisteresis1(:));
-% Test = [positiveTest; negativeTest];
-% 
-% confusionmat(Predicted, Test);
-
-
-
-% adder = resultHisteresis1 + templateDouble;
-% TP = length(find(adder == 2));
-% TN = length(find(adder == 0));
-% subtr = resultHisteresis1 - templateDouble;
-% FP = length(find(subtr == -1));
-% FN = length(find(subtr == 1));
-% 
-% test(TP, FP, TN, FN);
-%resultHisteresis
 
 
 outputRPA(outputRPA & resultHisteresis) = 246;
@@ -357,24 +272,24 @@ nameImage = sprintf('_%s_.png',filename);
 outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
 imwrite(im, outputDir);  
 
-% commonResult = sum(resultHisteresis & templateR);
-% unionResult = sum(resultHisteresis | templateR);
-% cm=sum(resultHisteresis == 1); 
-% co=sum(templateR == 1); 
-% Jaccard=commonResult/unionResult;
-% Dice=(2*commonResult)/(cm+co);
+commonResult = sum(resultHisteresis & templateR);
+unionResult = sum(resultHisteresis | templateR);
+cm=sum(resultHisteresis == 1); 
+co=sum(templateR == 1); 
+Jaccard=commonResult/unionResult;
+Dice=(2*commonResult)/(cm+co);
 
 % 
-% tamano=get(0,'ScreenSize');
-% figDir = ['/home/xenon/git_workspace/results/'];
-% figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
-% 
-% imshowpair(templateR, resultHisteresis);
-% title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
-% 
-% h=openfig(figDir,'new','invisible');
-% saveas(h,outputDir,'png');
-% close(h);
+tamano=get(0,'ScreenSize');
+figDir = ['/home/xenon/git_workspace/results/'];
+figure('position',[tamano(1) tamano(2) tamano(3) tamano(4)]);
+
+imshowpair(templateR, resultHisteresis);
+title(['Jaccard Index = ' num2str(Jaccard) '       ' 'Dice Index = ' num2str(Dice)]); 
+
+h=openfig(figDir,'new','invisible');
+saveas(h,outputDir,'png');
+close(h);
 
 
 

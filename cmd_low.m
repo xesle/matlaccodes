@@ -4,24 +4,9 @@ close all;clc;
 inputDir = '/home/xenon/git_workspace/matlaccodes/NewDataSet';
 [filename, folderPath , filterindex] = uigetfile([inputDir '/*.*'],'Pick some images','MultiSelect', 'on');
 
-if (iscell(filename))
-    maxE = numel(filename);
-else
-    maxE = 1;
-end 
+sigmaCMD = 0.1:0.01:2;
 
-for i = 1:maxE
-    if (iscell(filename))
-        imagePath{i} = [folderPath ,filename{i}];
-    else
-        imagePath = [folderPath ,filename];
-    end
-end 
-
-sigmaCMD =  0.1:0.1:3;
-%sigmaCMD = 0.1;
-
-precisioncmd = 3;
+precisioncmd = 4;
 
 templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/' filename]);
 
@@ -30,11 +15,6 @@ templateR =  imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTe
 maskR = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/maskCropped/' filename]);
 imga = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Cropped/' filename]);
         
-[rows columns nc] = size(imga);
-
-if nc == 3
-    imga = rgb2gray(imga);
-end;
                        
 outputR =  imga;
 outputDouble = im2double(outputR);
@@ -47,37 +27,18 @@ templateDouble = double(templateR);
     
 for y = 1:numel(sigmaCMD)
 
-disp('---');
-disp(sigmaCMD(y));
-    
+disp(sigmaCMD(y));    
 [gxxr, gxyr, gyyr] = imHessian(outputDouble,sigmaCMD(y));
 [lambda1, lambda2] = imEigenValues(gxxr, gxyr, gyyr, maskR);
 
+sumaq = lambda1 + lambda2;
+divq = lambda1 ./ lambda2;
+cmdValue = -(divq .* sumaq);        
 
-cmdValue = zeros(size(lambda1));
-div = zeros(size(lambda1));
-suma =  zeros(size(lambda1));
-
-n = numel(lambda1);
-
-for i = 1:n
-        suma(i) = lambda1(i) + lambda2(i);
-        aux = lambda1(i) ./ lambda2(i);
-        if isnan(aux)
-            div(i) = 0;
-        else    
-            div(i) = aux;
-        end    
-        cmdValue(i) = -(div(i) * suma(i));  
-end
-
-cmdValue(suma >= 0) = 0;
+cmdValue(sumaq >= 0) = 0;
 
 cmdValueRound =  roundn(cmdValue,precisioncmd);
 positiveUnique = unique(cmdValueRound); 
-
-disp('--------');
-disp(numel(positiveUnique));
 
 for x = 1:numel(positiveUnique)
     
@@ -102,15 +63,15 @@ for x = 1:numel(positiveUnique)
 
 %detections = connecction(L, num, result);
  
-if precision > 0.15 && precision < 1  
+if FP == 0  
     
 detections = connecction(L, num, result);
  
 if detections > 5
 
-outputRPA = 255 - outputR;
-outputRPB = 255 - outputR;
-outputRPC = 255 - outputR;
+outputRPA = outputR;
+outputRPB = outputR;
+outputRPC = outputR;
 
 [l,m] = size(result);
 resultExtend = result;
