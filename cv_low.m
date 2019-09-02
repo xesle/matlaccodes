@@ -20,11 +20,11 @@ outputR =   imga;
 outputDouble = im2double(outputR);
 templateDouble = double(templateR);    
   
-sigmaCV2 = 0.1:0.01:2;
+sigmaCV2 = 0.44:0.01:2;
 
 
+%     0.4400
 
-disp(numel(sigmaCV2)); 
 for y = 1:numel(sigmaCV2)
 
 [gxxr, gxyr, gyyr] = imHessian(outputDouble,sigmaCV2(y));
@@ -41,17 +41,18 @@ disp('*******************')
 disp(sigmaCV2(y));
 disp(numel(positiveUnique))
 
-for x = 1:numel(positiveUnique)
+disp(numel(sigmaCV2)); 
+parfor x = 1:numel(positiveUnique)
 
 result = zeros(size(generalRater));
 result(abs(positiveUnique(x) - generalRater) <= eps(generalRater)) = 1;
 
-commonResult = sum(result & templateR);
-unionResult = sum(result | templateR);
-cm=sum(result == 1); % the number of voxels in m
-co=sum(templateR == 1); % the number of voxels in o 
-Jaccard=commonResult/unionResult;
-Dice=(2*commonResult)/(cm+co);
+% commonResult = sum(result & templateR);
+% unionResult = sum(result | templateR);
+% cm=sum(result == 1); % the number of voxels in m
+% co=sum(templateR == 1); % the number of voxels in o 
+% Jaccard=commonResult/unionResult;
+% Dice=(2*commonResult)/(cm+co);
 
 adder = result + templateDouble;
 TP = length(find(adder == 2));
@@ -68,7 +69,7 @@ if FP == 0
     
 detections = connecction(L, num, result);
 
-if detections > 11
+if detections > 6
  
 outputRPA = outputR;
 outputRPB = outputR;
@@ -101,19 +102,21 @@ end
 
 contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
 
-outputRPA(outputRPA & contour) = 59;
-outputRPB(outputRPB & contour) = 246;
-outputRPC(outputRPC & contour) = 22;
 
 outputRPA(outputRPA & resultExtend) = 246;
 outputRPB(outputRPB & resultExtend) = 22;
 outputRPC(outputRPC & resultExtend) = 22;
 
+outputRPA(outputRPA & contour) = 59;
+outputRPB(outputRPB & contour) = 246;
+outputRPC(outputRPC & contour) = 22;
+
+
 
 im = cat(3, outputRPA, outputRPB, outputRPC);
 
 nameImage = sprintf('Detect_%1.7f_name_%s_cv_%1.7f_sg_%1.7f_FP_%1.7f_.png',detections, filename,positiveUnique(x),sigmaCV2(y),FP);
-outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
+outputDir = ['/home/xenon/git_workspace/results/20/'  nameImage];
 imwrite(im, outputDir);  
 
 %end

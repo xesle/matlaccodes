@@ -8,9 +8,6 @@ inputDir = '/home/xenon/git_workspace/matlaccodes/NewDataSet/Templates';
 
 
 precisioncmd = 1;
-maxJac = [];
-posSig = [];
-posCV = [];  
 
 % sigmaCMDl =  1.36;
 % precisioncmdl = 3;
@@ -164,57 +161,6 @@ end
 end
 
 end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% [ma, ind] = max(maxJac);
-% disp(ma); 
-% 
-% [gxxr, gxyr, gyyr] = imHessian(outputDouble,posSig(ind));
-% [lambda1, lambda2] = imEigenValues(gxxr, gxyr, gyyr, maskR);
-% 
-% 
-% cmdValue = zeros(size(lambda1));
-% div = zeros(size(lambda1));
-% suma =  zeros(size(lambda1));
-% 
-% sumaq = lambda1 + lambda2;
-% divq = lambda1 ./ lambda2;
-% cmdValue = -(divq .* sumaq);        
-% 
-% cmdValue(sumaq >= 0) = 0;
-% 
-% generalRateA =  roundn(cmdValue,precisioncmd);
-% 
-% resultf = zeros(size(generalRateA));
-% resultf(abs(posCV(ind) - generalRateA) <= eps(generalRateA)) = 1;
-% 
-% resultf = bwfill(resultf,'holes',8);
-% 
-% outputRPA = 255 - outputR;
-% outputRPB = 255 - outputR;
-% outputRPC = 255 - outputR;
-% 
-% contour = imread(['/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/' filename]);
-% 
-% outputRPA(outputRPA & contour) = 59;
-% outputRPB(outputRPB & contour) = 246;
-% outputRPC(outputRPC & contour) = 22;
-% 
-% outputRPA(outputRPA & resultf) = 246;
-% outputRPB(outputRPB & resultf) = 22;
-% outputRPC(outputRPC & resultf) = 22;
-% 
-% 
-% im = cat(3, outputRPA, outputRPB, outputRPC);
-% 
-% nameImage = sprintf('best_sg_%1.7f_name_%s_cv_%1.7f_Prec_%1.7f_.png',posSig(ind), filename,posCV(ind),ma);
-% outputDir = ['/home/xenon/git_workspace/results/'  nameImage];
-% imwrite(im, outputDir);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
 
 close all;
 

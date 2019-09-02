@@ -80,7 +80,6 @@ end
 
 
 if nc == 3
- 
     img = rgb2gray(img);
 end
 
@@ -140,18 +139,11 @@ end
 width =  c;
 height = b - a;
 
-disp('width');
-disp(width);
-
-disp('height');
-disp(height);
-
 x1 = a;
 y1 = 1;
 
 rect = [y1 x1 width height];
 disp(rect);
-
 %newStr = split(filename,".");
 % 
 % disp(newStr(1));
@@ -161,6 +153,11 @@ disp(rect);
 dirTemplate = strcat('/home/xenon/git_workspace/matlaccodes/NewDataSet/Templates/', filename);
 output = imread(dirTemplate);
 
+output2 = zeros(size(output));
+output2(output > 0) = 1;
+
+
+
 dirCrop = strcat('/home/xenon/git_workspace/matlaccodes/NewDataSet/Cropped/', filename);
 
 croppedTemplates = strcat('/home/xenon/git_workspace/matlaccodes/NewDataSet/CroppedTemplates/', filename);
@@ -168,7 +165,7 @@ maskCrop = strcat('/home/xenon/git_workspace/matlaccodes/NewDataSet/maskCropped/
 contour = strcat('/home/xenon/git_workspace/matlaccodes/NewDataSet/Contour/', filename);
 
  
-outputRy = imcrop(output,rect);
+outputRy = imcrop(output2,rect);
 imwrite(outputRy,croppedTemplates);
 % 
 img3y = imcrop(img,rect);
